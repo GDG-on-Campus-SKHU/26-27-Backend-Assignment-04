@@ -20,10 +20,6 @@ public class AdminService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
-        if (user.getIsAdmin()) {
-            return AdminResponse.from(user);
-        } else  {
-            throw new UnauthorizedException(ErrorCode.ADMIN_REQUIRED);
-        }
+        return AdminResponse.from(user);
     }
 }

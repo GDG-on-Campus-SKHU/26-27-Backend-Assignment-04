@@ -39,14 +39,28 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // 3. 인증이 안 된 사용자가 보호된 API에 접근하면 401
                 .exceptionHandling(exception -> exception
+                        // 3-1 인증이 안 된 사용자가 보호된 API에 접근하면 401
                         .authenticationEntryPoint((request, response, e) -> {
                             ErrorCode errorCode = ErrorCode.AUTH_REQUIRED;
                             response.setStatus(errorCode.getStatus().value());
                             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-                            objectMapper.writeValue(response.getOutputStream(), ErrorResponse.from(errorCode));
+                            objectMapper.writeValue(
+                                    response.getOutputStream(),
+                                    ErrorResponse.from(errorCode)
+                            );
+                        })
+                        // 3-2 인증 된 사용자가 권한이 없으면 403
+                        .accessDeniedHandler((request, response, e) -> {
+                            ErrorCode errorCode = ErrorCode.ADMIN_REQUIRED;
+                            response.setStatus(errorCode.getStatus().value());
+                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+                            objectMapper.writeValue(
+                                    response.getOutputStream(),
+                                    ErrorResponse.from(errorCode)
+                            );
                         }))
 
                 // 4. URL별 접근 규칙
@@ -54,6 +68,7 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/signup", "/auth/login", "/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.GET, "/posts").permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
 
                 // 5. 우리가 만든 JWT 필터를 Spring Security 필터 체인에 끼워 넣기
