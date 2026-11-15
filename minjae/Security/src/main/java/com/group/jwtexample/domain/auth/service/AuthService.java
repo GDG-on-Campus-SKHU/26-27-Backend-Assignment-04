@@ -12,6 +12,7 @@ import com.group.jwtexample.global.exception.ConflictException;
 import com.group.jwtexample.global.exception.ErrorCode;
 import com.group.jwtexample.global.exception.UnauthorizedException;
 import com.group.jwtexample.global.jwt.JwtProvider;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -53,16 +54,22 @@ public class AuthService {
         }
 
         // 3. 토큰 발급
-        return issueTokens(user.getId());
+        return issueTokens(user.getId(), user.getIsAdmin());
     }
 
     public TokenResponse refresh(RefreshRequest request) {
         String refreshToken = request.refreshToken();
 
         // 1. Refresh Token 자체가 올바른지 확인 (서명, 만료, 종류)
+        Claims claims;
         Long userId;
+        boolean isAdmin;
         try {
-            userId = jwtProvider.getUserIdFromRefreshToken(refreshToken);
+            claims = jwtProvider.getClaimsFromRefreshToken(refreshToken);
+            userId = Long.valueOf(claims.getSubject());
+            isAdmin = Boolean.TRUE.equals(
+                    claims.get("isAdmin", Boolean.class)
+            );
         } catch (JwtException | IllegalArgumentException e) {
             throw new UnauthorizedException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
@@ -76,12 +83,12 @@ public class AuthService {
         }
 
         // 3. 새 토큰 발급 (이전 Refresh Token은 덮어써져서 더 이상 못 씀)
-        return issueTokens(userId);
+        return issueTokens(userId, isAdmin);
     }
 
-    private TokenResponse issueTokens(Long userId) {
-        String accessToken = jwtProvider.createAccessToken(userId);
-        String refreshToken = jwtProvider.createRefreshToken(userId);
+    private TokenResponse issueTokens(Long userId, Boolean isAdmin) {
+        String accessToken = jwtProvider.createAccessToken(userId, isAdmin);
+        String refreshToken = jwtProvider.createRefreshToken(userId, isAdmin);
 
         // 처음 로그인이면 새로 저장하고, 이미 있으면 새 토큰으로 덮어씁니다.
         RefreshToken savedToken = refreshTokenRepository.findByUserId(userId)

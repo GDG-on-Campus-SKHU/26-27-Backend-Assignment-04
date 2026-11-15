@@ -26,11 +26,4 @@ public class AdminService {
             throw new UnauthorizedException(ErrorCode.ADMIN_REQUIRED);
         }
     }
-
-    public Boolean userIsAdmin(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
-
-        return user.getIsAdmin();
-    }
 }

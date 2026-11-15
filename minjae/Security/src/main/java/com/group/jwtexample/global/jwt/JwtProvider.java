@@ -1,6 +1,5 @@
 package com.group.jwtexample.global.jwt;
 
-import com.group.jwtexample.domain.admin.service.AdminService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -23,32 +22,29 @@ public class JwtProvider {
     private final long accessTokenExpiration;
     private final long refreshTokenExpiration;
 
-    private final AdminService adminService;
-
     public JwtProvider(@Value("${jwt.secret}") String secret,
                        @Value("${jwt.access-token-expiration}") long accessTokenExpiration,
-                       @Value("${jwt.refresh-token-expiration}") long refreshTokenExpiration, AdminService adminService) {
+                       @Value("${jwt.refresh-token-expiration}") long refreshTokenExpiration) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.accessTokenExpiration = accessTokenExpiration;
         this.refreshTokenExpiration = refreshTokenExpiration;
-        this.adminService = adminService;
     }
 
-    public String createAccessToken(Long userId) {
-        return createToken(userId, ACCESS, accessTokenExpiration);
+    public String createAccessToken(Long userId, Boolean isAdmin) {
+        return createToken(userId, isAdmin, ACCESS, accessTokenExpiration);
     }
 
-    public String createRefreshToken(Long userId) {
-        return createToken(userId, REFRESH, refreshTokenExpiration);
+    public String createRefreshToken(Long userId, Boolean isAdmin) {
+        return createToken(userId, isAdmin, REFRESH, refreshTokenExpiration);
     }
 
-    private String createToken(Long userId, String type, long expiration) {
+    private String createToken(Long userId, Boolean isAdmin, String type, long expiration) {
         Date now = new Date();
 
         return Jwts.builder()
                 .subject(String.valueOf(userId))                  // sub: 누구의 토큰인지
                 .claim("type", type)                           // access인지 refresh인지
-                .claim("isAdmin", adminService.userIsAdmin(userId))
+                .claim("isAdmin", isAdmin)
                 .id(UUID.randomUUID().toString())                 // 같은 순간에 만들어도 토큰이 겹치지 않게
                 .issuedAt(now)                                    // iat: 발급 시각
                 .expiration(new Date(now.getTime() + expiration)) // exp: 만료 시각
@@ -56,38 +52,22 @@ public class JwtProvider {
                 .compact();
     }
 
-    // 토큰 검증하기
-    // 서명이 틀리거나, 만료됐거나, 종류가 다르면 JwtException이 발생합니다.
-    public Long getUserIdFromAccessToken(String token) {
-        return getUserId(token, ACCESS);
-    }
-
-    public Long getUserIdFromRefreshToken(String token) {
-        return getUserId(token, REFRESH);
-    }
-
-    private Long getUserId(String token, String expectedType) {
-        Claims claims = Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)   // 여기서 서명과 만료를 검사합니다.
-                .getPayload();
-
-        if (!expectedType.equals(claims.get("type", String.class))) {
-            throw new JwtException("토큰 종류가 올바르지 않습니다.");
-        }
-
-        return Long.valueOf(claims.getSubject());
-    }
-
     public Claims getClaimsFromAccessToken(String token) {
+        return getClaims(token, ACCESS);
+    }
+
+    public Claims getClaimsFromRefreshToken(String token) {
+        return getClaims(token, REFRESH);
+    }
+
+    private Claims getClaims(String token, String expectedType) {
         Claims claims = Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
 
-        if (!ACCESS.equals(claims.get("type", String.class))) {
+        if (!expectedType.equals(claims.get("type", String.class))) {
             throw new JwtException("토큰 종류가 올바르지 않습니다.");
         }
 
