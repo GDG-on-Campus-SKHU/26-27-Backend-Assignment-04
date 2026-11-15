@@ -10,6 +10,7 @@ import com.group.jwtexample.domain.user.entity.User;
 import com.group.jwtexample.domain.user.repository.UserRepository;
 import com.group.jwtexample.global.exception.ConflictException;
 import com.group.jwtexample.global.exception.ErrorCode;
+import com.group.jwtexample.global.exception.NotFoundException;
 import com.group.jwtexample.global.exception.UnauthorizedException;
 import com.group.jwtexample.global.jwt.JwtProvider;
 import io.jsonwebtoken.Claims;
@@ -67,9 +68,12 @@ public class AuthService {
         try {
             claims = jwtProvider.getClaimsFromRefreshToken(refreshToken);
             userId = Long.valueOf(claims.getSubject());
-            isAdmin = Boolean.TRUE.equals(
-                    claims.get("isAdmin", Boolean.class)
-            );
+
+            // 유저 권한 다시 확인하기
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+
+            isAdmin = user.getIsAdmin();
         } catch (JwtException | IllegalArgumentException e) {
             throw new UnauthorizedException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
