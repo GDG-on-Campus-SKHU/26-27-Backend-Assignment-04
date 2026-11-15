@@ -1,6 +1,5 @@
 package com.group.jwtexample.global.jwt;
 
-import com.group.jwtexample.domain.admin.service.AdminService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;

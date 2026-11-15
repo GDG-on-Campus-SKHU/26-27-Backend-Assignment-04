@@ -25,6 +25,7 @@ public enum ErrorCode {
     INVALID_REFRESH_TOKEN("AUTH_003", HttpStatus.UNAUTHORIZED, "유효하지 않은 Refresh Token입니다."),
     REFRESH_TOKEN_NOT_FOUND("AUTH_004", HttpStatus.UNAUTHORIZED, "로그인 기록이 없습니다."),
     REFRESH_TOKEN_REUSED("AUTH_005", HttpStatus.UNAUTHORIZED, "이미 사용한 Refresh Token입니다."),
+    ADMIN_REQUIRED("AUTH_006", HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 
     // Post
     POST_NOT_FOUND("POST_001", HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
