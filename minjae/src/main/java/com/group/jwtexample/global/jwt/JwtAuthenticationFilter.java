@@ -1,6 +1,7 @@
 package com.group.jwtexample.global.jwt;
 
-import com.group.jwtexample.domain.user.service.UserService;
+import com.group.jwtexample.domain.admin.service.AdminService;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,7 +21,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
-    private final UserService userService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -32,18 +32,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (token != null) {
             try {
-                // 2. 토큰 검증하고 userId 꺼내기
-                Long userId = jwtProvider.getUserIdFromAccessToken(token);
+
+                Claims claims = jwtProvider.getClaimsFromAccessToken(token);
+
+                Long userId = Long.valueOf(claims.getSubject());
+                boolean isAdmin = Boolean.TRUE.equals(
+                        claims.get("isAdmin", Boolean.class)
+                );
 
                 // 3. "이 요청은 userId 사용자가 보냈다"는 인증 정보 만들기
-
-                // 3-1. 관리자인지 확인 후 역할 넣어주기
-                Boolean userIsAdmin = userService.userIsAdmin(userId);
-
                 List<SimpleGrantedAuthority> authorities = new ArrayList<>();
                 authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
 
-                if (userIsAdmin) {
+                if (isAdmin) {
                     authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
                 }
 

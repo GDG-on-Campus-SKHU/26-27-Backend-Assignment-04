@@ -1,5 +1,6 @@
 package com.group.jwtexample.global.jwt;
 
+import com.group.jwtexample.domain.admin.service.AdminService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -22,12 +23,15 @@ public class JwtProvider {
     private final long accessTokenExpiration;
     private final long refreshTokenExpiration;
 
+    private final AdminService adminService;
+
     public JwtProvider(@Value("${jwt.secret}") String secret,
                        @Value("${jwt.access-token-expiration}") long accessTokenExpiration,
-                       @Value("${jwt.refresh-token-expiration}") long refreshTokenExpiration) {
+                       @Value("${jwt.refresh-token-expiration}") long refreshTokenExpiration, AdminService adminService) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.accessTokenExpiration = accessTokenExpiration;
         this.refreshTokenExpiration = refreshTokenExpiration;
+        this.adminService = adminService;
     }
 
     public String createAccessToken(Long userId) {
@@ -44,6 +48,7 @@ public class JwtProvider {
         return Jwts.builder()
                 .subject(String.valueOf(userId))                  // sub: 누구의 토큰인지
                 .claim("type", type)                           // access인지 refresh인지
+                .claim("isAdmin", adminService.userIsAdmin(userId))
                 .id(UUID.randomUUID().toString())                 // 같은 순간에 만들어도 토큰이 겹치지 않게
                 .issuedAt(now)                                    // iat: 발급 시각
                 .expiration(new Date(now.getTime() + expiration)) // exp: 만료 시각
@@ -73,5 +78,19 @@ public class JwtProvider {
         }
 
         return Long.valueOf(claims.getSubject());
+    }
+
+    public Claims getClaimsFromAccessToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        if (!ACCESS.equals(claims.get("type", String.class))) {
+            throw new JwtException("토큰 종류가 올바르지 않습니다.");
+        }
+
+        return claims;
     }
 }

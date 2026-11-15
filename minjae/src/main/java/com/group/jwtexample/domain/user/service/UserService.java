@@ -22,11 +22,4 @@ public class UserService {
 
         return UserResponse.from(user);
     }
-
-    public Boolean userIsAdmin(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
-
-        return user.getIsAdmin();
-    }
 }

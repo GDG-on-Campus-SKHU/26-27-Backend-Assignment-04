@@ -1,7 +1,7 @@
 package com.group.jwtexample.domain.user.controller;
 
-import com.group.jwtexample.domain.user.dto.UserResponse;
-import com.group.jwtexample.domain.user.service.UserService;
+import com.group.jwtexample.domain.admin.dto.AdminResponse;
+import com.group.jwtexample.domain.admin.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserService userService;
+    private final AdminService adminService;
 
     // 토큰에서 꺼낸 userId가 @AuthenticationPrincipal로 들어옵니다.
     @GetMapping("/me")
-    public UserResponse getMyInfo(@AuthenticationPrincipal Long userId) {
-        return userService.getMyInfo(userId);
+    public AdminResponse getMyInfo(@AuthenticationPrincipal Long userId) {
+        return adminService.getMyInfo(userId);
     }
 }
