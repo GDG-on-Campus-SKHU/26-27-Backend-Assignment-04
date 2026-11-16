@@ -37,4 +37,10 @@ public class User {
         this.password = password;
         this.role = Role.USER; // 일반 회원가입으로 생성되는 계정의 역할 USER 강제
     }
+
+    public static User createAdmin(String email, String encodedPassword) {
+        User user = new User(email, encodedPassword);
+        user.role = Role.ADMIN;
+        return user;
+    }
 }
