@@ -62,8 +62,10 @@ public class JwtProvider {
     public Long getUserIdFromRefreshToken(String token) {
         return getUserId(token, REFRESH);
     }
-
-    public String getUserRoleFromAccessToken(String token) { return getUserRole(token); }
+    
+    public String getUserRoleFromAccessToken(String token) {
+        return getUserRole(token);
+    }
 
     private Long getUserId(String token, String expectedType) {
         Claims claims = Jwts.parser()

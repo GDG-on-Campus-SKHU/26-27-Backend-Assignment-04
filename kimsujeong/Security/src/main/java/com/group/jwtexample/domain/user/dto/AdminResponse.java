@@ -8,5 +8,7 @@ public record AdminResponse(
         String email,
         Boolean isAdmin
 ) {
-    public static AdminResponse from(User user) { return new AdminResponse(user.getId(), user.getEmail(), user.getRole() == Role.ADMIN); }
+    public static AdminResponse from(User user) {
+        return new AdminResponse(user.getId(), user.getEmail(), user.getRole() == Role.ADMIN);
+    }
 }
