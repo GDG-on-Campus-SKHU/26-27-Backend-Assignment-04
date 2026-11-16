@@ -37,7 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Authentication authentication = UsernamePasswordAuthenticationToken.authenticated(
                         userId,                                         // principal: 누구인지
                         null,                                           // credentials: 검증 끝났으니 필요 없음
-                        List.of(new SimpleGrantedAuthority(userRole))   // authorities: 권한
+                        List.of(new SimpleGrantedAuthority("ROLE_" + userRole))   // authorities: 권한
                 );
 
                 // 4. SecurityContext에 저장 → 이제 Spring Security가 "인증된 요청"으로 봅니다.

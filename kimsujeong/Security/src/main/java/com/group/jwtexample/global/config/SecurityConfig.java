@@ -47,13 +47,22 @@ public class SecurityConfig {
                             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
                             objectMapper.writeValue(response.getOutputStream(), ErrorResponse.from(errorCode));
-                        }))
+                        })
+                        .accessDeniedHandler((request, response, e) -> {
+                            ErrorCode errorCode = ErrorCode.ADMIN_FORBIDDEN;
+                            response.setStatus(errorCode.getStatus().value());
+                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+                            objectMapper.writeValue(response.getOutputStream(), ErrorResponse.from(errorCode));
+                        })
+                )
 
                 // 4. URL별 접근 규칙
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/signup", "/auth/login", "/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.GET, "/posts").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
 
                 // 5. 우리가 만든 JWT 필터를 Spring Security 필터 체인에 끼워 넣기
