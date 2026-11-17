@@ -55,39 +55,27 @@ public class JwtProvider {
 
     // 토큰 검증하기
     // 서명이 틀리거나, 만료됐거나, 종류가 다르면 JwtException이 발생합니다.
-    public Long getUserIdFromAccessToken(String token) {
-        return getUserId(token, ACCESS);
+    // Access Token 검증 후 Claims 한 번에 반환
+    public Claims getClaimsFromAccessToken(String token) {
+        return getClaims(token, ACCESS);
     }
 
     public Long getUserIdFromRefreshToken(String token) {
-        return getUserId(token, REFRESH);
-    }
-    
-    public String getUserRoleFromAccessToken(String token) {
-        return getUserRole(token);
+        Claims claims = getClaims(token, REFRESH);
+        return Long.valueOf(claims.getSubject());
     }
 
-    private Long getUserId(String token, String expectedType) {
+    private Claims getClaims(String token, String expectedType) {
         Claims claims = Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
-                .parseSignedClaims(token)   // 여기서 서명과 만료를 검사합니다.
+                .parseSignedClaims(token)   // 서명과 만료를 한 번만 검사
                 .getPayload();
 
         if (!expectedType.equals(claims.get("type", String.class))) {
             throw new JwtException("토큰 종류가 올바르지 않습니다.");
         }
 
-        return Long.valueOf(claims.getSubject());
-    }
-
-    private String getUserRole(String token) {
-        Claims claims = Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-
-        return claims.get("role", String.class);
+        return claims;
     }
 }

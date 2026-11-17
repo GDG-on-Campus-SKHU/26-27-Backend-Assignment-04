@@ -1,5 +1,6 @@
 package com.group.jwtexample.global.jwt;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -29,9 +30,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (token != null) {
             try {
-                // 2. 토큰 검증하고 userId 꺼내기
-                Long userId = jwtProvider.getUserIdFromAccessToken(token);
-                String userRole = jwtProvider.getUserRoleFromAccessToken(token); // userRole 꺼내기
+                // 2. 토큰 검증하고 Claims에서 userId와 userRole 꺼내기
+                Claims claims = jwtProvider.getClaimsFromAccessToken(token);
+                Long userId = Long.valueOf(claims.getSubject());
+                String userRole = claims.get("role", String.class);
 
                 // 3. "이 요청은 userId 사용자가 보냈다"는 인증 정보 만들기
                 Authentication authentication = UsernamePasswordAuthenticationToken.authenticated(
