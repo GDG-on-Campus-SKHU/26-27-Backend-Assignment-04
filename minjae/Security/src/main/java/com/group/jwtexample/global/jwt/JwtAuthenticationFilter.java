@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -35,16 +36,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Claims claims = jwtProvider.getClaimsFromAccessToken(token);
 
                 Long userId = Long.valueOf(claims.getSubject());
-                boolean isAdmin = Boolean.TRUE.equals(
-                        claims.get("isAdmin", Boolean.class)
-                );
 
-                // 3. "이 요청은 userId 사용자가 보냈다"는 인증 정보 만들기
+                List<?> permissions = claims.get("permissions", List.class);
+
                 List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-                authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
 
-                if (isAdmin) {
-                    authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+                if (permissions != null) {
+                    for (Object value : permissions) {
+                        if (!(value instanceof String permission)) {
+                            throw new JwtException("권한 정보가 올바르지 않습니다.");
+                        }
+
+                        authorities.add(new SimpleGrantedAuthority(permission));
+                    }
                 }
 
                 Authentication authentication =

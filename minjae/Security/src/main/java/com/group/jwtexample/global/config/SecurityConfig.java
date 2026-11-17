@@ -53,7 +53,7 @@ public class SecurityConfig {
                         })
                         // 3-2 인증 된 사용자가 권한이 없으면 403
                         .accessDeniedHandler((request, response, e) -> {
-                            ErrorCode errorCode = ErrorCode.ADMIN_REQUIRED;
+                            ErrorCode errorCode = ErrorCode.ACCESS_DENIED;
                             response.setStatus(errorCode.getStatus().value());
                             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
@@ -68,7 +68,7 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/signup", "/auth/login", "/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.GET, "/posts").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/**").hasAuthority("ACCESS_ADMIN")
                         .anyRequest().authenticated())
 
                 // 5. 우리가 만든 JWT 필터를 Spring Security 필터 체인에 끼워 넣기
