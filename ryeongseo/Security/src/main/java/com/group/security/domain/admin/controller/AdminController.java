@@ -1,7 +1,8 @@
-package com.group.security.domain.admin;
 
-import com.group.security.domain.user.entity.User;
-import com.group.security.domain.user.repository.UserRepository;
+package com.group.security.domain.admin.controller;
+
+import com.group.security.domain.admin.dto.AdminResponse;
+import com.group.security.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,19 +14,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AdminController {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @GetMapping("/me")
     public AdminResponse getMyInfo(Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-
-        return new AdminResponse(
-                user.getId(),
-                user.getEmail(),
-                true
-        );
+        return userService.getAdminInfo(userId);
     }
 }

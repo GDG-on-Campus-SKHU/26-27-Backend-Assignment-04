@@ -56,8 +56,8 @@ public class JwtProvider {
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + expiration));
 
-        // Access Token에만 사용자 역할 저장
-        if (ACCESS.equals(type)) {
+        // 역할 정보가 있을 때만 토큰에 저장
+        if (role != null) {
             builder.claim("role", role.name());
         }
 
@@ -66,11 +66,7 @@ public class JwtProvider {
                 .compact();
     }
 
-    // 토큰 검증
-    public Long getUserIdFromAccessToken(String token) {
-        return getUserId(token, ACCESS);
-    }
-    public UserRole getRoleFromAccessToken(String token) {
+    public Claims getClaimsFromAccessToken(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
@@ -83,7 +79,11 @@ public class JwtProvider {
 
         String role = claims.get("role", String.class);
 
-        return UserRole.valueOf(role);
+        if (role == null) {
+            throw new JwtException("Access Token에 역할 정보가 없습니다.");
+        }
+
+        return claims;
     }
 
     public Long getUserIdFromRefreshToken(String token) {

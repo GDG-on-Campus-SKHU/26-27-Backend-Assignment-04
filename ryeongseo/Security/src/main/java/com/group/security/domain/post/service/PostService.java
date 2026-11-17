@@ -8,7 +8,6 @@ import com.group.security.domain.post.repository.PostRepository;
 import com.group.security.global.exception.ErrorCode;
 import com.group.security.global.exception.ForbiddenException;
 import com.group.security.global.exception.NotFoundException;
-import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,9 +44,6 @@ public class PostService {
         }
 
         postRepository.delete(post);
-    }
-
-    public void deletePost(@Positive(message = "게시글 id는 양수여야 합니다.") Long postId, Long userId) {
     }
 }
 //

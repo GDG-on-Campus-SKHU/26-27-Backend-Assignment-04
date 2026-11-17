@@ -19,6 +19,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.group.security.global.exception.NotFoundException;
 
 @Service
 @RequiredArgsConstructor
@@ -81,8 +82,7 @@ public class AuthService {
         }
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UnauthorizedException(ErrorCode.INVALID_REFRESH_TOKEN));
-
+                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
         return issueTokens(user);
     }
 

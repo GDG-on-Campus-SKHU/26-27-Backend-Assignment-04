@@ -1,4 +1,4 @@
-package com.group.security.domain.admin;
+package com.group.security.domain.admin.dto;
 
 public record AdminResponse(
         Long id,

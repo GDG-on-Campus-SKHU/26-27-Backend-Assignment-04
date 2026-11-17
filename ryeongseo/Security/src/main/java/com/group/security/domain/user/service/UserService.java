@@ -1,6 +1,7 @@
 package com.group.security.domain.user.service;
 
 
+import com.group.security.domain.admin.dto.AdminResponse;
 import com.group.security.domain.user.dto.UserResponse;
 import com.group.security.domain.user.entity.User;
 import com.group.security.domain.user.repository.UserRepository;
@@ -21,6 +22,17 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
+
         return UserResponse.from(user);
+    }
+    public AdminResponse getAdminInfo(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
+
+        return new AdminResponse(
+                user.getId(),
+                user.getEmail(),
+                true
+        );
     }
 }
