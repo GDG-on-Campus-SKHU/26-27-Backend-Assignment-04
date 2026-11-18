@@ -11,6 +11,6 @@ public record AdminResponse(
 ) {
 
     public static AdminResponse from(User user) {
-        return new AdminResponse(user.getId(), user.getEmail(), user.getRole() == Role.ADMIN);
+        return new AdminResponse(user.getId(), user.getEmail(), user.isAdmin());
     }
 }

@@ -45,4 +45,8 @@ public class User {
         this.password = password;
         this.role = role;
     }
+
+    public boolean isAdmin() {
+        return role == Role.ADMIN;
+    }
 }
