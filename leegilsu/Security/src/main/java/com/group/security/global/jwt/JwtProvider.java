@@ -55,24 +55,12 @@ public class JwtProvider {
 
     // 토큰 검증하기
     // 서명이 틀리거나, 만료됐거나, 종류가 다르면 JwtException이 발생합니다.
-    public Long getUserIdFromAccessToken(String token) {
-        return getUserId(token, ACCESS);
-    }
-
-    public UserRole getRoleFromAccessToken(String token) {
-        Claims claims = getClaims(token, ACCESS);
-
-        return UserRole.valueOf(
-                claims.get("role", String.class)
-        );
+    public Claims parseAccessTokenClaims(String token) {
+        return getClaims(token, ACCESS);
     }
 
     public Long getUserIdFromRefreshToken(String token) {
-        return getUserId(token, REFRESH);
-    }
-
-    private Long getUserId(String token, String expectedType) {
-        Claims claims = getClaims(token, expectedType);
+        Claims claims = getClaims(token, REFRESH);
 
         return Long.valueOf(claims.getSubject());
     }

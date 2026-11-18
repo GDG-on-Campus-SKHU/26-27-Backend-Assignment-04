@@ -1,6 +1,7 @@
 package com.group.security.global.jwt;
 
 import com.group.security.domain.user.entity.UserRole;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -32,8 +33,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (token != null) {
             try {
                 // 2. 토큰 검증하고 userId 꺼내기
-                Long userId = jwtProvider.getUserIdFromAccessToken(token);
-                UserRole role = jwtProvider.getRoleFromAccessToken(token);
+                Claims claims = jwtProvider.parseAccessTokenClaims(token);
+
+                Long userId = Long.valueOf(claims.getSubject());
+                UserRole role = UserRole.valueOf(claims.get("role", String.class));
 
                 // 3. "이 요청은 userId 사용자가 보냈다"는 인증 정보 만들기
                 Authentication authentication = UsernamePasswordAuthenticationToken.authenticated(
