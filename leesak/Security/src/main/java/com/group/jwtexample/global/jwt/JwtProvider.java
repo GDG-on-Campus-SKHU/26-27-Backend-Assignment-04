@@ -62,23 +62,21 @@ public class JwtProvider {
 
     // 토큰 검증하기
     // 서명이 틀리거나, 만료됐거나, 종류가 다르면 JwtException이 발생합니다.
-    public Long getUserIdFromAccessToken(String token) {
-        return getUserId(token, ACCESS);
-    }
-
-    public Role getRoleFromAccessToken(String token) {
+    public AccessTokenInfo parseAccessToken(String token) {
         Claims claims = getClaims(token, ACCESS);
+        Long userId = Long.valueOf(claims.getSubject());
         String roleName = claims.get("role", String.class);
 
         if (roleName == null) {
             throw new JwtException("토큰에 역할 정보가 없습니다.");
         }
 
-        return Role.valueOf(roleName);
+        return new AccessTokenInfo(userId, Role.valueOf(roleName));
     }
 
     public Long getUserIdFromRefreshToken(String token) {
-        return getUserId(token, REFRESH);
+        Claims claims = getClaims(token, REFRESH);
+        return Long.valueOf(claims.getSubject());
     }
 
     // 중복 코드 사용을 줄이기 위해서 payload 검증 메서드를 정의합니다.
@@ -96,8 +94,5 @@ public class JwtProvider {
         return claims;
     }
 
-    private Long getUserId(String token, String expectedType) {
-        Claims claims = getClaims(token, expectedType);
-        return Long.valueOf(claims.getSubject());
-    }
+    public record AccessTokenInfo(Long userId, Role role) {}
 }
