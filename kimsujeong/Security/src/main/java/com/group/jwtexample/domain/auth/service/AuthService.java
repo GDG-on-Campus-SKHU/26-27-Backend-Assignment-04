@@ -88,7 +88,7 @@ public class AuthService {
 
     private TokenResponse issueTokens(Long userId, Role userRole) {
         String accessToken = jwtProvider.createAccessToken(userId, userRole);
-        String refreshToken = jwtProvider.createRefreshToken(userId, userRole);
+        String refreshToken = jwtProvider.createRefreshToken(userId);
 
         // 처음 로그인이면 새로 저장하고, 이미 있으면 새 토큰으로 덮어씁니다.
         RefreshToken savedToken = refreshTokenRepository.findByUserId(userId)

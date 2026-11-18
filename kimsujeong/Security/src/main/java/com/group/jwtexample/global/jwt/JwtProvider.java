@@ -2,6 +2,7 @@ package com.group.jwtexample.global.jwt;
 
 import com.group.jwtexample.domain.user.entity.Role;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -35,22 +36,26 @@ public class JwtProvider {
         return createToken(userId, userRole, ACCESS, accessTokenExpiration);
     }
 
-    public String createRefreshToken(Long userId, Role userRole) {
-        return createToken(userId, userRole, REFRESH, refreshTokenExpiration);
+    public String createRefreshToken(Long userId) {
+        return createToken(userId, null, REFRESH, refreshTokenExpiration);
     }
 
     private String createToken(Long userId, Role role, String type, long expiration) {
         Date now = new Date();
 
-        return Jwts.builder()
+        JwtBuilder builder = Jwts.builder()
                 .subject(String.valueOf(userId))                  // sub: 누구의 토큰인지
-                .claim("role", role.name())                    // token에 역할 담기
                 .claim("type", type)                           // access인지 refresh인지
                 .id(UUID.randomUUID().toString())                 // 같은 순간에 만들어도 토큰이 겹치지 않게
                 .issuedAt(now)                                    // iat: 발급 시각
                 .expiration(new Date(now.getTime() + expiration)) // exp: 만료 시각
-                .signWith(secretKey, Jwts.SIG.HS256)              // 비밀키로 서명 (HS256)
-                .compact();
+                .signWith(secretKey, Jwts.SIG.HS256);              // 비밀키로 서명 (HS256)
+
+        if (role != null) {
+            builder.claim("role", role.name());
+        }
+
+        return builder.compact();
     }
 
     // 토큰 검증하기
